@@ -1,1 +1,1 @@
-from code.api.routes import route_handlers
+from .routes import route_handlers

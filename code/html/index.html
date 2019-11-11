@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bootstrap Form Template</title>
+    <script src="bootstrapcreative.js"></script>
+    <link rel='stylesheet' href='bootstrap.min.css'>
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div class="container">
+    <form>
+        <h2>MIDI configuration</h2>
+        <div class="panel panel-default">
+            <div class="panel-heading">A Basic Panel</div>
+            <div style="padding: 1em" class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <!--           <input type="text" class="form-control" placeholder="" id="first">-->
+                        <select name="type" id="type" class="form-control">
+                            <option value="note_on">Note on</option>
+                            <option value="note_off">Note off</option>
+                            <option value="polyphonic">Polyphonic Key Pressure</option>
+                            <option value="cc">Control Change</option>
+                            <option value="pc">Program Change</option>
+                            <option value="channel_pressure">Channel Pressure</option>
+                            <option value="pitch_bend">Pitch Bend Change</option>
+                        </select>
+                    </div>
+                </div>
+                <!--  col-md-6   -->
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="channel">Channel</label>
+                        <select id="channel" name="channel" class="form-control"></select>
+                    </div>
+                </div>
+                <!--  col-md-6   -->
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="data_1">Data 1</label>
+                        <input type="number" name="data_1" min="0" max="127" class="form-control" placeholder=""
+                               id="data_1">
+                    </div>
+                </div>
+                <!--  col-md-6   -->
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="data_2">Data 2</label>
+                        <input type="number" name="data_2" min="0" max="127" class="form-control" placeholder=""
+                               id="data_2">
+                    </div>
+                </div>
+                <!--  col-md-6   -->
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+<script>
+    // window.onload(() => {
+    for (var i = 1; i <= 16; i++) {
+        var select = document.getElementById("channel");
+        var option = document.createElement("OPTION");
+        select.options.add(option);
+        option.text = i;
+        option.value = i;
+    }
+    // })
+</script>
+
+</body>
+</html>

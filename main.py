@@ -1,8 +1,8 @@
-from code import wifi, server
+from code import wifi, webpage
 
 
-# wifi.start_wifi()
-# server.run()
+wifi.start_wifi()
+webpage.run()
 
 from machine import UART, Pin
 import time
