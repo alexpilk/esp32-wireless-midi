@@ -34,21 +34,25 @@ def process_template(template, **kwargs):
     return template
 
 
-def render_notes(row, template):
-    rows = ''
+def render_notes(row, slot_temp, template):
     print(midi_messages.slots.quantity)
+    slots = ''
     for slot in range(midi_messages.slots.quantity):
+        rows = ''
         print(slot)
         messages = midi_messages.slots.get(slot)
         print(messages)
-        for message in messages:
+        for index, message in enumerate(messages):
             print(message)
             message = MidiMessage(*message)
-            rendered_row = process_template(row, data_1=message.data_1, data_2=message.data_2, prefix='0_1', type=message.type, channel=message.channel)
+            rendered_row = process_template(row, data_1=message.data_1, data_2=message.data_2,
+                                            prefix='{}_{}'.format(slot, index), type=message.type,
+                                            channel=message.channel, slot=slot)
             print(rendered_row)
             rows += rendered_row
-    return process_template(template, row=rows)
-
+        slot_rendered = process_template(slot_temp, rows=rows, slot=slot)
+        slots += slot_rendered
+    return process_template(template, slots=slots)
 
 
 def _get_slot(route_args):
@@ -70,16 +74,22 @@ def set_note(http_client, http_response, route_args):
 
 def home(http_client, http_response):
     filename = 'index.html'
-    row = '/code/html/row_template.html'
-    template = '/code/html/index.html'
-    with open(row) as row_file, open(template) as template_file:
+    row = '/code/html/templates/row_template.html'
+    slot = '/code/html/templates/slot_template.html'
+    template = '/code/html/templates/index.html'
+    with open(row) as row_file, open(template) as template_file, open(slot) as slot_file:
         row_read = row_file.read()
         template_read = template_file.read()
-        rendered = render_notes(row_read, template_read)
+        slot_read = slot_file.read()
+        rendered = render_notes(row_read, slot_read, template_read)
         # row_read = row_read.replace('{{ prefix }}', '1_1')
         # template_read = template_read.replace('{{ row }}', row_read)
-        http_response.WriteResponseOk(contentType='text/html', content=rendered)
-    # _serve_file(filename, 'text/html', http_response)
+        # http_response.WriteResponseOk(contentType='text/html', content=rendered)
+        import os
+        os.remove('/code/html/index.html')
+        with open('/code/html/index.html', 'w+') as f:
+            f.write(rendered)
+        # _serve_file('/code/html/index.html', 'text/html', http_response)
 
 
 def css(http_client, http_response):

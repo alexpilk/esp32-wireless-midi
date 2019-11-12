@@ -88,7 +88,7 @@ class Receiver:
                     action()
 
 
-receiver = Receiver()
-
-if __name__ == '__main__':
-    receiver.connect()
+# receiver = Receiver()
+#
+# if __name__ == '__main__':
+#     receiver.connect()
