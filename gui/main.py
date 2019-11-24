@@ -4,6 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
+import requests
+import json
 
 MESSAGE_TYPES = {
     0b1001: 'note_on',
@@ -45,28 +47,23 @@ class MidiMessage:
 
 
 def get_slots():
-    import requests
-    import json
 
-    return [
-        # [[200, 100, 100], [128, 123, 150]],
-        json.loads(requests.get('http://192.168.1.27/note/0/').text),
-        [],
-        []
-    ]
+    print(json.loads(requests.get('http://192.168.1.27/notes/').text))
+    return json.loads(requests.get('http://192.168.1.27/notes/').text)
+        # [],
+        # []
+    # ]
 
 
-def set_slots(messages):
-    slots = [m.raw for m in messages]
+def set_slots(slots):
+    slots = [[m.raw for m in messages] for messages in slots]
     print(slots)
+    return requests.post('http://192.168.1.27/notes/', json=slots)
 
 
 class Message:
 
     def __init__(self, message_type=None, channel=None, data_1=None, data_2=None):
-        headers = [
-            Label(text='Type'), Label(text='Channel'), Label(text='Data 1'), Label(text='Data 2')
-        ]
         # self._add(headers)
         self.type = Spinner(text=message_type or '<Select>', values=MESSAGE_TYPES.values())
         # print(status.text)
@@ -75,7 +72,9 @@ class Message:
         self.data_2 = TextInput(multiline=False, input_type='number', text=str(data_2))
 
         inputs = [self.type, self.channel, self.data_1, self.data_2]
-        self.widgets = headers + inputs
+        del_button = Button(text='Delete')
+        self.widgets = [del_button] + inputs
+        del_button.widgets = self.widgets
 
     def to_midi(self):
         return MidiMessage.from_form(self.type.text, self.channel.text, self.data_1.text, self.data_2.text)
@@ -83,40 +82,70 @@ class Message:
 
 class LoginScreen(GridLayout):
 
-    def __init__(self, messages, **kwargs):
+    def __init__(self, slots, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
-        self.cols = 4
+        self.cols = 5
         self.row_force_default = True
         self.row_default_height = 40
-        self.messages = messages
-        for message in messages:
-            self._add(message.widgets)
+        self.slots = slots
+
+        self.slot_indexes = [31, 16, 6]
+        for i, slot in enumerate(slots):
+            headers = [
+                Label(text=f'Slot {i}'), Label(text='Type'), Label(text='Channel'), Label(text='Data 1'), Label(text='Data 2')
+            ]
+            self._add(headers)
+            for j, message in enumerate(slot):
+                self._add(message.widgets)
+                message.widgets[0].slot = slot
+                message.widgets[0].message_index = j
+                message.widgets[0].bind(on_press=self._remove)
+            add_message_button = Button(text='Add message')
+            add_message_button.slot = i
+            add_message_button.bind(on_press=self.add_message)
+            self._add([add_message_button, Label(), Label(), Label(), Label()])
+
         btn1 = Button(text='Update')
         btn1.bind(on_press=self.update)#lambda x: print(messages[0].widgets[4].text))
 
         self._add([btn1])
 
+    def add_message(self, button):
+        slot = button.slot
+        print(slot)
+        message = Message()
+        self.slots[slot].append(message)
+        self._add(message.widgets, index=self.slot_indexes[slot])
+
     def update(self, a):
         print(a)
-        set_slots([m.to_midi() for m in self.messages])
+        set_slots([[m.to_midi() for m in messages] for messages in self.slots])
 
-    def _add(self, widgets):
+    def _add(self, widgets, index=0):
         for widget in widgets:
-            self.add_widget(widget)
+            self.add_widget(widget, index=index)
+            # self.add_widget(widget)
+
+    def _remove(self, button):
+        for widget in button.widgets:
+            self.remove_widget(widget)
+        del button.slot[button.message_index]
 
 
 class MidiApp(App):
 
     def build(self):
-        messages = []
+        slots = []
         for slot in get_slots():
+            messages = []
+            slots.append(messages)
             for message in slot:
                 message = MidiMessage(*message)
                 messages.append(Message(message.type, message.channel, message.data_1, message.data_2))
         # messages = [
         #     Message(), Message(), Message()
         # ]
-        return LoginScreen(messages)
+        return LoginScreen(slots)
 
 
 if __name__ == '__main__':

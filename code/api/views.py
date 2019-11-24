@@ -72,7 +72,23 @@ def set_note(http_client, http_response, route_args):
     http_response.WriteResponseOk()
 
 
+def get_notes(http_client, http_response):
+    messages = midi_messages.slots.messages
+    http_response.WriteResponseJSONOk(messages, headers={'Access-Control-Allow-Origin': '*'})
+
+
+def set_notes(http_client, http_response):
+    # slot = _get_slot(route_args)
+    # messages = http_client.ReadRequestContentAsJSON()
+    slots = http_client.ReadRequestContentAsJSON()
+    for slot, messages in enumerate(slots):
+        midi_messages.slots.set(slot, messages)
+    http_response.WriteResponseOk()
+
+
 def home(http_client, http_response):
+    from random import randint
+    return http_response.WriteResponseOk(content=str(randint(0, 100000)), contentType='text/plain')
     filename = 'index.html'
     row = '/code/html/templates/row_template.html'
     slot = '/code/html/templates/slot_template.html'

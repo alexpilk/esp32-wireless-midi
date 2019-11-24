@@ -35,7 +35,7 @@ class Slots:
 
     def __init__(self):
         self.indexes = {slot: 0 for slot in range(self.quantity)}
-        self.messages = {slot: [] for slot in range(self.quantity)}
+        self.messages = [[] for slot in range(self.quantity)]
 
     @validate_slot
     def pop_message(self, slot):
