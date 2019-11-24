@@ -6,10 +6,12 @@ int lastButtonState = LOW;   // the previous reading from the input pin
 // milliseconds, will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+//int lastLed = HIGH;
 
 
-void checkButtons(){
-    int reading = digitalRead(buttonPin);
+void checkButtons(int buttonNumber, String message){
+
+    int reading = digitalRead(buttonNumber);
 
   // check to see if you just pressed the button
   // (i.e. the input went from LOW to HIGH), and you've waited long enough
@@ -31,9 +33,9 @@ void checkButtons(){
 
       // only toggle the LED if the new button state is HIGH
       if (buttonState == HIGH) {
-        blueToothSerial.print("presse");
-        digitalWrite(led, HIGH);
-        
+        blueToothSerial.print(message);
+//        digitalWrite(led, lastLed);
+//        lastLed = !lastLed;
       }
     }
   }

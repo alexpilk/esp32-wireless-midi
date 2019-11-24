@@ -1,4 +1,5 @@
 from code import wifi, webpage
+from code.config import midi_messages
 
 
 wifi.start_wifi()
@@ -8,6 +9,21 @@ from machine import UART, Pin
 import time
 
 
+class MidiInterface:
+    baud = 31250
+
+    def __init__(self):
+        self.uart = None
+
+    def connect(self):
+        self.uart = UART(2, self.baud)
+        self.uart.init(self.baud, bits=8, parity=None, stop=1, tx=18)
+
+    def send(self, slot):
+        message = midi_messages.slots.pop_message(slot)
+        self.uart.write(bytes(message))
+
+
 class Receiver:
     def __init__(self):
         self.uart = UART(1)
@@ -15,9 +31,12 @@ class Receiver:
         self.led = Pin(4, Pin.OUT)
 
         self.EVENTS = {
-            'Disconnected': self.reconnect,
-            'presse': self.on_button
+            b'Disconnected': self.reconnect,
+            b'0': lambda: self.on_button(0),
+            b'1': lambda: self.on_button(1),
+            b'2': lambda: self.on_button(2)
         }
+        self.midi = MidiInterface()
 
     def connect(self):
         self.factory_default()
@@ -28,18 +47,19 @@ class Receiver:
         self.start()
         self.inquire()
         self.connect_first()
+        self.midi.connect()
         self.loop()
 
-    def on_button(self):
-        print('YAY')
+    def on_button(self, slot):
         self.led.on()
-        time.sleep(1)
+        self.midi.send(slot)
         self.led.off()
+        print('Pressed {}'.format(slot))
 
     def reconnect(self):
         while True:
             data = self.connect_first()
-            if 'Connected' in data:
+            if b'Connected' in data:
                 return self.loop()
             time.sleep(1)
 
@@ -50,7 +70,6 @@ class Receiver:
         self.uart.write(command+'\r\n')
         time.sleep(1)
         return self.wait()
-        # print(self.uart.read())
 
     def reset(self):
         return self.run_command('AT+RESET')
@@ -84,11 +103,11 @@ class Receiver:
         while True:
             data = self.wait()
             for expected, action in self.EVENTS.items():
-                if expected in str(data):
+                if expected in data:
                     action()
 
 
-# receiver = Receiver()
-#
-# if __name__ == '__main__':
-#     receiver.connect()
+receiver = Receiver()
+
+if __name__ == '__main__':
+    receiver.connect()
