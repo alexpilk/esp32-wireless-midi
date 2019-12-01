@@ -10,7 +10,10 @@ def connect_station(configuration: config.StationConfig):
 
 
 def connect_access_point(configuration: config.AccessPointConfig):
-    raise NotImplementedError
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    ap.config(essid=configuration.SSID, password=configuration.PASSWORD)
+    ap.ifconfig((configuration.IP, configuration.SUBNET_MASK, configuration.GATEWAY, '8.8.8.8'))
 
 
 def start_wifi():

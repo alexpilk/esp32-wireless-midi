@@ -1,12 +1,15 @@
 import ujson
 
 
-ACCESS_POINT_MODE = False
+ACCESS_POINT_MODE = True
 
 
 class AccessPointConfig:
     SSID = 'ESP-32-WOOWOOWOO'
     PASSWORD = 'thisisnotaspoon'
+    IP = '192.168.1.27'
+    SUBNET_MASK = '255.255.255.0'
+    GATEWAY = '192.168.1.27'
 
 
 class StationConfig:
