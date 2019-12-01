@@ -20,8 +20,10 @@ class MidiInterface:
         self.uart.init(self.baud, bits=8, parity=None, stop=1, tx=18)
 
     def send(self, slot):
-        message = midi_messages.slots.pop_message(slot)
-        self.uart.write(bytes(message))
+        if midi_messages.slots.messages[slot]:
+            message = midi_messages.slots.pop_message(slot)
+            self.uart.write(bytes(message))
+            print('Sent {}'.format(message))
 
 
 class Receiver:

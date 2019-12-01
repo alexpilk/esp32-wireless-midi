@@ -47,26 +47,18 @@ class MidiMessage:
 
 
 def get_slots():
-
-    print(json.loads(requests.get('http://192.168.1.27/notes/').text))
     return json.loads(requests.get('http://192.168.1.27/notes/').text)
-        # [],
-        # []
-    # ]
 
 
 def set_slots(slots):
     slots = [[m.raw for m in messages] for messages in slots]
-    print(slots)
     return requests.post('http://192.168.1.27/notes/', json=slots)
 
 
 class Message:
 
     def __init__(self, message_type=None, channel=None, data_1=None, data_2=None):
-        # self._add(headers)
         self.type = Spinner(text=message_type or '<Select>', values=MESSAGE_TYPES.values())
-        # print(status.text)
         self.channel = Spinner(text=str(channel) or '1', values=(str(i) for i in range(1, 17)))
         self.data_1 = TextInput(multiline=False, input_type='number', text=str(data_1))
         self.data_2 = TextInput(multiline=False, input_type='number', text=str(data_2))
@@ -92,7 +84,8 @@ class LoginScreen(GridLayout):
         self.slot_indexes = [31, 16, 6]
         for i, slot in enumerate(slots):
             headers = [
-                Label(text=f'Slot {i}'), Label(text='Type'), Label(text='Channel'), Label(text='Data 1'), Label(text='Data 2')
+                Label(text=f'Slot {i}'), Label(text='Type'), Label(text='Channel'), Label(text='Data 1'),
+                Label(text='Data 2')
             ]
             self._add(headers)
             for j, message in enumerate(slot):
@@ -106,25 +99,22 @@ class LoginScreen(GridLayout):
             self._add([add_message_button, Label(), Label(), Label(), Label()])
 
         btn1 = Button(text='Update')
-        btn1.bind(on_press=self.update)#lambda x: print(messages[0].widgets[4].text))
+        btn1.bind(on_press=self.update)
 
         self._add([btn1])
 
     def add_message(self, button):
         slot = button.slot
-        print(slot)
         message = Message()
         self.slots[slot].append(message)
         self._add(message.widgets, index=self.slot_indexes[slot])
 
     def update(self, a):
-        print(a)
         set_slots([[m.to_midi() for m in messages] for messages in self.slots])
 
     def _add(self, widgets, index=0):
         for widget in widgets:
             self.add_widget(widget, index=index)
-            # self.add_widget(widget)
 
     def _remove(self, button):
         for widget in button.widgets:
@@ -142,9 +132,7 @@ class MidiApp(App):
             for message in slot:
                 message = MidiMessage(*message)
                 messages.append(Message(message.type, message.channel, message.data_1, message.data_2))
-        # messages = [
-        #     Message(), Message(), Message()
-        # ]
+
         return LoginScreen(slots)
 
 
