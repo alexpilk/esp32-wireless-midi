@@ -22,10 +22,6 @@ void setPinModes() {
 }
 
 void loop() {
-  if (blueToothSerial.available()) {
-    String recvChar = blueToothSerial.readString();
-    blueToothSerial.flush();
-  }
   for (int i = 0; i < 3; i++) {
     checkButton(&buttons[i], i);
   }
