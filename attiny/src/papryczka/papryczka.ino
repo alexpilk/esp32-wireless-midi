@@ -8,56 +8,35 @@
 
 SoftwareSerial blueToothSerial(RxD, TxD);
 
-const int led = 4;
-const int buttonPin = 3;
-int lastLed = HIGH;
-
-Button button1(3);
-Button button2(0);
+Button buttons[] = {Button(3), Button(0), Button(4)};
 
 void setup()
 {
   setPinModes();
   setupBlueToothConnection();
-//  button = Button(3);
-  digitalWrite(led, HIGH);
 }
 
 void setPinModes() {
   pinMode(RxD, INPUT);
   pinMode(TxD, OUTPUT);
-  pinMode(led, OUTPUT);
-  pinMode(buttonPin, INPUT);
 }
 
 void loop() {
-  int count = 0;
-  while (1) {
-    delay(100);
-    if (blueToothSerial.available()) {
-      String recvChar = blueToothSerial.readString();
-      blueToothSerial.flush();
-//      blueToothSerial.print(recvChar + "o");
-      count++ ;
-      if (count % 2 == 0)
-        digitalWrite(led, HIGH);
-      else
-        digitalWrite(led, LOW);
-    }
-    if(button1.check()) {
-      
-        blueToothSerial.print("0");
-        digitalWrite(led, lastLed);
-    }
-    if(button2.check()) {
-      
-        blueToothSerial.print("1");
-        digitalWrite(led, lastLed);
-    }
-//    checkButtons(3, "0");
-//    checkButtons(0, "1");
+  if (blueToothSerial.available()) {
+    String recvChar = blueToothSerial.readString();
+    blueToothSerial.flush();
+  }
+  for (int i = 0; i < 3; i++) {
+    checkButton(&buttons[i], i);
   }
 }
+
+void checkButton(Button* button, int message) {
+    if(button->check(blueToothSerial)) { 
+        blueToothSerial.print(message);
+    }
+}
+
 void write(String command) {
   blueToothSerial.print("\r\nAT+" + command + "\r\n");
   blueToothSerial.readString();
@@ -74,9 +53,5 @@ void setupBlueToothConnection()
   write("IMME0");
   write("RESET");
   write("NOTI1");
-  delay(2000); // This delay is required.
-  blueToothSerial.print("bluetooth connected!\n");
-
-  delay(2000); // This delay is required.
   blueToothSerial.flush();
 }
